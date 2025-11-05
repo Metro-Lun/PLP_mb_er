@@ -244,7 +244,34 @@ gcc main.o volume.o surface.o -lm -o sphere
 
 ---
 
-## Exercice 2.8 [★★★] – Synthèse des approches en C
+## Exercice 2.8 [★★★]
+
+**Rechercher une phrase dans un tableau de phrases**
+
+
+Écrivez un programme en C nommé `chercher.c*` qui contient un tableau de 10 phrases (tableau de tableaux de caractères) et qui recherche si une phrase donnée est présente dans le tableau. L'objectif est de réaliser cette recherche sans utiliser les fonctions de bibliothèques standards ou externes.
+
+**Exemple**:
+Supposons que le tableau contienne les phrases suivantes :
+
+```
+ "Bonjour, comment ça va ?"
+ "Le temps est magnifique aujourd'hui."
+ "C'est une belle journée."
+ "La programmation en C est amusante."
+ "Les tableaux en C sont puissants."
+ "Les pointeurs en C peuvent être déroutants."
+ "Il fait beau dehors."
+ "La recherche dans un tableau est intéressante."
+ "Les structures de données sont importantes."
+ "Programmer en C, c'est génial."
+```
+
+Si on recherche la phrase "La programmation en C est amusante.", le programme doit afficher `Phrase trouvée`. Si on recherche `Je préfère le Python.`, le programme doit afficher `hrase non trouvée`.
+
+---
+
+## Exercice 2.9 [★★★] – Synthèse des approches en C
 
 **Objectif :** Créer un rapport  (`programmation_C.md`) qui synthétise :
 
@@ -258,7 +285,7 @@ gcc main.o volume.o surface.o -lm -o sphere
 ## Fichiers à rendre
 
 * **Markdown :** `programmation_C.md`, `CONTRIBUTORS.md`, `README.md`
-* **C :** `aire.c`, `bd_école.c`, `chaine.c`, `couleurs.c`, `erreurs.c`, `main.c`, `phrases.c`, `sizeof_types.c`, `sphere.h`, `surface.c`, `volume.c`
+* **C :** `aire.c`, `bd_école.c`, `chaine.c`, `chercher.c`, `couleurs.c`, `erreurs.c`, `main.c`, `phrases.c`, `sizeof_types.c`, `sphere.h`, `surface.c`, `volume.c`
 
 **Instructions générales :**
 
