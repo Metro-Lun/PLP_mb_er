@@ -132,8 +132,8 @@ $ ./variables
 **Compilation et exécution :**
 
 ```bash
-$ gcc -o operateurs operateurs.c
-$ ./operateurs
+$ gcc -o opérateurs opérateurs.c
+$ ./opérateurs
 ```
 
 ---
