@@ -249,7 +249,7 @@ gcc main.o volume.o surface.o -lm -o sphere
 **Rechercher une phrase dans un tableau de phrases**
 
 
-Écrivez un programme en C nommé `chercher.c*` qui contient un tableau de 10 phrases (tableau de tableaux de caractères) et qui recherche si une phrase donnée est présente dans le tableau. L'objectif est de réaliser cette recherche sans utiliser les fonctions de bibliothèques standards ou externes.
+Écrivez un programme en C nommé `chercher.c` qui contient un tableau de 10 phrases (tableau de tableaux de caractères) et qui recherche si une phrase donnée est présente dans le tableau. L'objectif est de réaliser cette recherche sans utiliser les fonctions de bibliothèques standards ou externes.
 
 **Exemple**:
 Supposons que le tableau contienne les phrases suivantes :
