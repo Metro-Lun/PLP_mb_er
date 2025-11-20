@@ -29,7 +29,7 @@ typedef struct {
  * Traite la commande 'quit'/'quitter' : ferme l'interpréteur de commandes.
  * @return 0 pour indiquer l'arrêt de la boucle principale.
  */
-int traiter_quit(const char* commande, const char* prefixe) {
+int traiter_quit() {
     printf("Arrêt de %s...\n", NOM_SHELL);
     return 0; // Le 0 sera interprété dans la boucle main comme un signal d'arrêt
 }
@@ -38,7 +38,7 @@ int traiter_quit(const char* commande, const char* prefixe) {
  * Affiche la version de l'interpréteur de commandes.
  * @return 1 pour continuer la boucle principale.
  */
-int afficher_version(const char* commande, const char* prefixe) {
+int afficher_version() {
     printf("%s - Version %s\n", NOM_SHELL, VERSION);
     return 1;
 }
@@ -47,7 +47,7 @@ int afficher_version(const char* commande, const char* prefixe) {
  * Affiche l'heure et la date actuelles.
  * @return 1 pour continuer la boucle principale.
  */
-int afficher_date(const char* commande, const char* prefixe) {
+int afficher_date() {
     time_t t = time(NULL);
     struct tm *tm_info = localtime(&t);
     char date_string[64];
@@ -66,7 +66,7 @@ int afficher_date(const char* commande, const char* prefixe) {
 int traiter_echo(const char* commande, const char* prefixe) {
     size_t len_prefixe = strlen(prefixe);
     const char* texte = commande + len_prefixe; // Saute le préfixe
-
+    
     // Imprime le texte restant
     if (*texte == '\0') {
         printf("\n");
@@ -77,7 +77,7 @@ int traiter_echo(const char* commande, const char* prefixe) {
 }
 
 // Déclaration anticipée car 'afficher_aide' l'utilise
-int afficher_aide(const char* commande, const char* prefixe); 
+int afficher_aide(const char* prefixe); 
 
 // --- Tableau de Commandes Bilingue ---
 
@@ -105,7 +105,7 @@ Commande commandes_disponibles[] = {
  * @param prefixe La commande utilisée ("help" ou "aide").
  * @return 1 pour continuer la boucle principale.
  */
-int afficher_aide(const char* commande, const char* prefixe) {
+int afficher_aide(const char* prefixe) {
     int est_fr = (strcmp(prefixe, "aide") == 0); // Détermine la langue de l'aide
 
     if (est_fr) {
@@ -120,9 +120,11 @@ int afficher_aide(const char* commande, const char* prefixe) {
         const char* nom_en = commandes_disponibles[i].nom_en;
         const char* nom_fr = commandes_disponibles[i].nom_fr;
 
-        // Formattage pour les commandes avec argument (echo/afficher)
+        // Formattage pour les commandes avec argument (echo/afficher) ou bilingues (date)
         if (strcmp(nom_en, "echo ") == 0) {
             printf("%-10s / %-10s : %s\n", "echo <text>", "afficher <texte>", (est_fr ? commandes_disponibles[i].description_fr : commandes_disponibles[i].description_en));
+        } else if(strcmp(nom_en, "date") == 0) {
+            printf("%-23s : %s\n", "date", (est_fr ? commandes_disponibles[i].description_fr : commandes_disponibles[i].description_en));
         } else {
             // Formattage pour les commandes sans argument
             printf("%-10s / %-10s : %s\n", nom_en, nom_fr, (est_fr ? commandes_disponibles[i].description_fr : commandes_disponibles[i].description_en));
@@ -173,7 +175,7 @@ int executer_commande(char* commande_entree_originale) {
             }
             // Vérifie l'alias FR (ex: "afficher test" vs "afficher ")
             else if (strncmp(commande_minuscule, nom_fr, len_fr) == 0) {
-                 return commandes_disponibles[i].fonction(commande_entree_originale, nom_fr);
+                return commandes_disponibles[i].fonction(commande_entree_originale, nom_fr);
             }
         } 
         // 2. Cas des commandes sans argument (quit/quitter, version, date, help/aide)
