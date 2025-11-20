@@ -267,7 +267,7 @@ Supposons que le tableau contienne les phrases suivantes :
  "Programmer en C, c'est génial."
 ```
 
-Si on recherche la phrase "La programmation en C est amusante.", le programme doit afficher `Phrase trouvée`. Si on recherche `Je préfère le Python.`, le programme doit afficher `hrase non trouvée`.
+Si on recherche la phrase "La programmation en C est amusante.", le programme doit afficher `Phrase trouvée`. Si on recherche `Je préfère le Python.`, le programme doit afficher `Phrase non trouvée`.
 
 ---
 
