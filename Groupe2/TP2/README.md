@@ -7,10 +7,11 @@
 # Références
 * [https://cplusplus.com/reference/cstring/strcspn/](Calculer la longueur d’une chaîne en C)
 * [https://www.cplusplus.com/reference/cstring/strcpy/](Copier une chaîne en C)
+* la doc (GeeksForGeeks, W3Schools, man...)
+* ChatGPT
 
 # Difficulté
-*
+* non
 
 # Commentaires
-* 
-* 
+* non
