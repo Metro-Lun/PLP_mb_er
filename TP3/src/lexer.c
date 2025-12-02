@@ -10,6 +10,7 @@ int add_element(Element** elements, int* size, Element element_to_add) {
 
     if(elements == NULL) {
         perror("realloc");
+        return 1;
     } else {
         new_elements[*size-1] = element_to_add;
         *elements = new_elements;
@@ -73,10 +74,12 @@ int main() {
             } else if(element.data.operande.type == FLOTTANT) {
                 printf("Flottant -> %lf\n", element.data.operande.valeur.flottant);
             } else {
-                printf("Erreur operande\n");
+                perror("Erreur operande\n");
+                return 1;
             }
         } else {
-            printf("Erreur type\n");
+            perror("Erreur type\n");
+            return 1;
         }
     }
 
