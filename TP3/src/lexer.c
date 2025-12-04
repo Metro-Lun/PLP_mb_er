@@ -19,7 +19,7 @@ int add_element(Element** elements, int* size, Element element_to_add) {
     return 0;
 }
 
-int lex(char* operation) {
+Element* lex(char* operation) {
     Element* elements = calloc(0, sizeof(Element));
     int size = 0;
 
@@ -30,7 +30,14 @@ int lex(char* operation) {
     while(token != NULL) {
         Element element;
 
-        size_t operator_index = strcspn(token, "+-*/");
+        size_t operator_index;
+
+        // cas de figure où nombre négatif
+        if(strlen(token) > 1 && token[0] == '-') {
+            operator_index = strlen(token);
+        } else {
+            operator_index = strcspn(token, "+-*/");
+        }
 
         if(operator_index != strlen(token)) {   // c'est donc un opérateur         
             element.type = OPERATEUR; 
@@ -39,7 +46,7 @@ int lex(char* operation) {
         } else {    // c'est donc un opérande
             element.type = OPERANDE;
             Operande operande;
-            if(strspn(token, "1234567890.,") == strlen(token)) {
+            if(strspn(token, "-1234567890.,") == strlen(token)) {
                 if(strchr(token, '.') != NULL || strchr(token, ',') != NULL) {
                     for(size_t i = 0; i < strlen(token); i++) {
                         if(token[i] == ',') {
@@ -54,9 +61,9 @@ int lex(char* operation) {
                     operande.valeur.entier = atoi(token);
                 }
                 element.data.operande = operande;
+
                 add_element(&elements, &size, element);
             }
-
         }
 
         // passer au suivant
@@ -65,28 +72,24 @@ int lex(char* operation) {
     
 
     // revenir au début et tout afficher
-    for(int i = 0; i < size; i++) {
-        Element element = elements[i];
-        if(element.type == OPERATEUR) {
-            printf("Opérateur -> %c\n", element.data.operateur);
-        } else if(element.type == OPERANDE) {
-            if(element.data.operande.type == ENTIER) {
-                printf("Entier -> %d\n", element.data.operande.valeur.entier);
-            } else if(element.data.operande.type == FLOTTANT) {
-                printf("Flottant -> %lf\n", element.data.operande.valeur.flottant);
-            } else {
-                perror("Erreur operande\n");
-                return 1;
-            }
-        } else {
-            perror("Erreur type\n");
-            return 1;
-        }
-    }
+    // for(int i = 0; i < size; i++) {
+    //     Element element = elements[i];
+    //     if(element.type == OPERATEUR) {
+    //         printf("Opérateur -> %c\n", element.data.operateur);
+    //     } else if(element.type == OPERANDE) {
+    //         if(element.data.operande.type == ENTIER) {
+    //             printf("Entier -> %d\n", element.data.operande.valeur.entier);
+    //         } else if(element.data.operande.type == FLOTTANT) {
+    //             printf("Flottant -> %lf\n", element.data.operande.valeur.flottant);
+    //         } else {
+    //             perror("Erreur operande\n");
+    //             return NULL;
+    //         }
+    //     } else {
+    //         perror("Erreur type\n");
+    //         return NULL;
+    //     }
+    // }
 
-    return 0;
-}
-
-int main() {
-    lex("3 + 12");
+    return elements;
 }

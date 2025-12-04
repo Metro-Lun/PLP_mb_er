@@ -25,3 +25,7 @@ typedef struct {
         Operande operande;
     } data;
 } Element;
+
+int add_element(Element** elements, int* size, Element element_to_add);
+
+Element* lex(char* operation);
