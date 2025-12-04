@@ -19,12 +19,13 @@ int add_element(Element** elements, int* size, Element element_to_add) {
     return 0;
 }
 
-int main() {
+int lex(char* operation) {
     Element* elements = calloc(0, sizeof(Element));
     int size = 0;
 
-    char operation[20] = "3,4 + 12";
-    char *token = strtok(operation, " ");
+    char buffer[256];
+    strcpy(buffer, operation);
+    char *token = strtok(buffer, " ");
 
     while(token != NULL) {
         Element element;
@@ -84,4 +85,8 @@ int main() {
     }
 
     return 0;
+}
+
+int main() {
+    lex("3 + 12");
 }
