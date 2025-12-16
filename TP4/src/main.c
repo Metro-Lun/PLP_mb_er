@@ -10,7 +10,6 @@
 int is_postfix_expression(const char* expr) {
     int len = strlen(expr);
     int last_was_number = 0;
-    int has_parentheses = 0;
     
     for(int i = 0; i < len; i++) {
         char c = expr[i];
@@ -22,7 +21,6 @@ int is_postfix_expression(const char* expr) {
         
         // Vérifier les parenthèses
         if(c == '(' || c == ')') {
-            has_parentheses = 1;
             return 0; // Si parenthèses, c'est infixe
         }
         
