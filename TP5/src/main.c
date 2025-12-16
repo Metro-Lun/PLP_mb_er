@@ -61,8 +61,60 @@ int is_postfix_expression(const char* expr) {
 
 
 // Cette fonction détecte si l'utilisateur a entré une variable
-int is_variable() {
-    return 0;
+int is_variable(char* input) {
+    // une variable => soit lettres, soit chiffres, soit _
+    if(strcspn(input, "_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ") == strlen(input)) {
+        return 0; // aucun de ces caractères -> pas de variable
+    }
+
+    // si oui, assignation de variable ?
+    if(strcspn(input, "=") != strlen(input)) {
+        //vérifier qu'il y a un seul = : pour cela, couper en trois
+        char* token = strtok(input, " ");
+        int input_length = 0;
+
+        // calculer la longueur : si 3 TODO: non
+        while(token != NULL) {
+            input_length++;
+            token = strtok(NULL, " ");
+        }
+        if(input_length != 3) return 0;
+
+        // parcourir les trois champs
+        token = strtok(input, " ");
+        Variable var;
+        int index = 0;
+
+        while(token != NULL) {
+            if(index == 0) {
+                if(isdigit(token[0])) return 0; // TODO: donner des erreurs correctes
+                var.name = token;
+            }
+
+            // vérifier s'il s'agit bien d'un =
+            if(index == 1) {
+                if(strcmp(token, "=") != 0) return 0; // TODO:
+            }
+
+            if(index == 2) {
+                if(strcspn(token, ".,") == strlen(token)) var.type = "int";
+                else if(strcspn(token, ".," != strlen(token))) var.type = "float";
+                else if(strcspn(token, "_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")) var.type = "str";
+                else return 0; //TODO: type non conforme
+
+                var.value = token;
+            }
+            index++;
+            token = strtok(NULL, " ");
+        }
+        //TODO:
+    }
+    // sinon, remplacer la variable par sa valeur
+    else {
+
+    }
+
+    return 1;
 }
 
 int main() {
@@ -94,17 +146,20 @@ int main() {
         
         if(strlen(input) == 0) {
             continue;
-        }
+        } 
         
         char* postfix = NULL;
         int need_free = 0;
+
+        // Détecter s'il s'agit d'une variable TODO:
+        is_variable(input); // TODO: ajouter pointeurs vers la structure Variables et input
         
         // Détecter si l'expression est déjà en postfixe
         if(is_postfix_expression(input)) {
-            printf("DEBUG - Expression détectée: POSTFIXE\n");
+            printf("-> Expression détectée: POSTFIXE\n");
             postfix = input; // Utiliser directement l'input
         } else {
-            printf("DEBUG - Expression détectée: INFIXE\n");
+            printf("-> Expression détectée: INFIXE\n");
             // Conversion de l'infixé au postfixé
             postfix = infix_to_postfix(input);
             need_free = 1;
@@ -114,7 +169,7 @@ int main() {
                 continue;
             }
             
-            printf("DEBUG - Expression postfixée: '%s'\n", postfix);
+            printf("-> Expression postfixée: '%s'\n", postfix);
         }
         
         // Évaluation de l'expression postfixée

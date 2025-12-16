@@ -1,7 +1,7 @@
 #pragma once
 
 // ============================================
-// DÉFINITION DES STRUCTURES DE PILE
+// DÉFINITION DES STRUCTURES
 // ============================================
 
 // Structure pour une pile de caractères (utilisée pour les opérateurs dans la conversion)
@@ -17,6 +17,13 @@ typedef struct {
     int top;       // Index du sommet de la pile
     int capacity;  // Capacité maximale du tableau
 } StackDouble;
+
+// Structure pour une variable (TP5)
+typedef struct {
+    char* type;
+    char* name;
+    char* value;
+} Variable;
 
 // ============================================
 // PROTOTYPES DES FONCTIONS POUR StackChar
