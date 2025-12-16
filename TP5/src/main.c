@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include "postfix.h"
+#include "interpretor.h"
 
 // Fonction pour détecter si l'expression est déjà en notation postfixe
 // Une expression est considérée comme postfixe si elle ne contient pas de parenthèses
@@ -56,6 +56,12 @@ int is_postfix_expression(const char* expr) {
     }
     
     // Si on n'a pas détecté de pattern postfixe évident, on suppose infixe
+    return 0;
+}
+
+
+// Cette fonction détecte si l'utilisateur a entré une variable
+int is_variable() {
     return 0;
 }
 
