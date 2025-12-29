@@ -59,59 +59,106 @@ int is_postfix_expression(const char* expr) {
     return 0;
 }
 
+/**
+ * Parcourt la structure de Variable en parametre pour determiner si la variable existe
+ * Renvoie la variable si elle existe, NULL sinon
+ */
+Variable* find_variable(Variable** variables, int* size, char* name) {
+    for(int i = 0; i < *size; i++) {
+        if(strcmp((*variables)[i].name, name) == 0)
+            return &(*variables)[i];
+    }
+    return NULL;
+}
 
-// Cette fonction détecte si l'utilisateur a entré une variable
-int is_variable(char* input) {
-    // une variable => soit lettres, soit chiffres, soit _
-    if(strcspn(input, "_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ") == strlen(input)) {
-        return 0; // aucun de ces caractères -> pas de variable
+/**
+ * Cette fonction detecte si l'utilisateur a entre une variable.
+ * 
+ * Codes de sortie: 
+ * 0 - succes, pas d'erreur
+ * 1 - n'est pas une variable
+ * 2 - assignation erronnee : il faudrait trois champs
+ * 3 - token operande invalide
+ * 4 - token operateur invalide
+ * 5 - erreur realloc
+ */
+int check_variable(char** input, Variable** variables, int* size) {
+    if(strcspn(*input, "_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ") == strlen(*input)) {
+        return 1; // n'est pas une variable
     }
 
-    // si oui, assignation de variable ?
-    if(strcspn(input, "=") != strlen(input)) {
-        //vérifier qu'il y a un seul = : pour cela, couper en trois
-        char* token = strtok(input, " ");
+    if(strcspn(*input, "=") != strlen(*input))
+    { // assignation
+        char* token = strtok(*input, " ");
         int input_length = 0;
-
-        // calculer la longueur : si 3 TODO: non
         while(token != NULL) {
             input_length++;
             token = strtok(NULL, " ");
         }
-        if(input_length != 3) return 0;
+        if(input_length != 3) return 2;
 
-        // parcourir les trois champs
-        token = strtok(input, " ");
-        Variable var;
+        token = strtok(*input, " ");
+        Variable var_to_add;
         int index = 0;
 
         while(token != NULL) {
-            if(index == 0) {
-                if(isdigit(token[0])) return 0; // TODO: donner des erreurs correctes
-                var.name = token;
+            switch(index) {
+                case 0 :
+                    if(isdigit(token[0])) return 3;
+                    var_to_add.name = token;
+                    break;
+                case 1 :
+                    if(strcmp(token, "=") != 0) return 4;
+                    break;
+                case 2 :
+                    if(strcspn(token, ".,") == strlen(token)) var_to_add.type = "int";
+                    else if(strcspn(token, ".,") != strlen(token)) var_to_add.type = "float";
+                    else if(strcspn(token, "_\"\'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ") != strlen(token)) var_to_add.type = "str"; //TODO: verifier balises d'ouverture et de fermeture
+                    else return 3;
+                    var_to_add.value = token;
+                    break;
+                default:
+                    break;
             }
 
-            // vérifier s'il s'agit bien d'un =
-            if(index == 1) {
-                if(strcmp(token, "=") != 0) return 0; // TODO:
-            }
-
-            if(index == 2) {
-                if(strcspn(token, ".,") == strlen(token)) var.type = "int";
-                else if(strcspn(token, ".," != strlen(token))) var.type = "float";
-                else if(strcspn(token, "_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")) var.type = "str";
-                else return 0; //TODO: type non conforme
-
-                var.value = token;
-            }
             index++;
             token = strtok(NULL, " ");
         }
-        //TODO:
-    }
-    // sinon, remplacer la variable par sa valeur
-    else {
 
+        // verifier que la variable n'existe pas deja
+        Variable* existing_var = find_variable(variables, size, var_to_add.name);
+        if(existing_var == NULL) {
+            (*size)++;
+            Variable* new_variables = realloc(*variables, sizeof(Variable) * (*size));
+            if(variables == NULL) {
+                perror("realloc");
+                return 5;
+            } else {
+                new_variables[*size-1] = var_to_add;
+                *variables = new_variables;
+            }
+        }
+
+        free(existing_var);
+    }
+
+    else
+    { // remplacer le nom de la variable par sa valeur
+        char* token = strtok(*input, " ");
+        char new_buffer[256];
+        int new_buffer_index = 0;
+
+        while(token != NULL) {
+            char* token_to_add;
+            if(strcspn(token, "_\"\'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ") != strlen(token)) {
+                Variable* var = find_variable(variables, size, token);
+            } else {
+                token_to_add = token;
+            }
+
+            // TODO: new_buffer += token_to_add;
+            token = strtok(NULL, " ");
+        }
     }
 
     return 1;
@@ -126,33 +173,27 @@ int main() {
     printf("  - Infixe: 3 + 4 * 5, (2 + 3) * 4\n");
     printf("  - Postfixe: 3 4 5 * +, 2 3 + 4 *\n\n");
     
-    char input[256];
+    char* input = calloc(256, sizeof(char));
+    Variable* variables = calloc(0, sizeof(Variable));
+    int size = 0;
     
     while(1) {
         printf("> ");
         
-        if(fgets(input, sizeof(input), stdin) == NULL) {
-            break;
-        }
+        if(fgets(input, sizeof(input), stdin) == NULL) break;
         
         size_t len = strlen(input);
-        if(len > 0 && input[len-1] == '\n') {
-            input[len-1] = '\0';
-        }
-        
-        if(strcmp(input, "q") == 0 || strcmp(input, "quit") == 0) {
-            break;
-        }
-        
-        if(strlen(input) == 0) {
-            continue;
-        } 
+        if(len > 0 && input[len-1] == '\n') input[len-1] = '\0';
+
+        if(strcmp(input, "q") == 0 || strcmp(input, "quit") == 0) break;
+
+        if(strlen(input) == 0) continue;
         
         char* postfix = NULL;
         int need_free = 0;
 
         // Détecter s'il s'agit d'une variable TODO:
-        is_variable(input); // TODO: ajouter pointeurs vers la structure Variables et input
+        check_variable(&input, &variables, &size); // TODO: ajouter pointeurs vers la structure Variables et input
         
         // Détecter si l'expression est déjà en postfixe
         if(is_postfix_expression(input)) {
