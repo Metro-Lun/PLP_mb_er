@@ -137,6 +137,8 @@ int check_variable(char** input, Variable** variables, int* size) {
                 new_variables[*size-1] = var_to_add;
                 *variables = new_variables;
             }
+
+            printf("%s\n", var_to_add.name);
         }
 
         free(existing_var);
