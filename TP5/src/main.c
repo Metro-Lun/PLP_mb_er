@@ -91,9 +91,9 @@ char* get_type(char** string_value) {
  * 2 - erreur, voir retour à l'écran
  */
 int check_variable(char** input, Variable** variables, int* size) {  
-    if(strcspn(*input, "_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ") == strlen(*input)) {
-        return 1; // n'est pas une variable donc tout va bien
-    }
+    // if(strcspn(*input, "_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ") == strlen(*input)) {
+    //     return 1; // n'est pas une variable donc tout va bien
+    // }
 
     char* input_copy = strdup(*input);
     char* token = strtok(input_copy, " ");
@@ -193,7 +193,9 @@ int check_variable(char** input, Variable** variables, int* size) {
         while(token != NULL) {
             char* token_to_add = token;
 
-            if(strcspn(token, "_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ") != strlen(token)) {
+            if(strspn(token, "1234567890.,") != strlen(token) // pas un float
+                && !isdigit(atoi(token)) // et pas un int
+            ) {
                 Variable* var = find_variable(variables, size, token);
                 if(var != NULL) {
                     // pour print uniquement un string
