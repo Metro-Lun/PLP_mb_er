@@ -82,6 +82,79 @@ char* get_type(char** string_value) {
         return "other";
 }
 
+int get_input_length(char** input) {
+    char* input_copy = strdup(*input);
+    char* saveptr; // contexte pour strtok
+    char* token = strtok_r(input_copy, " ", &saveptr);
+    int input_length = 0;
+    while(token != NULL) {
+        input_length++;
+        token = strtok_r(NULL, " ", &saveptr);
+    }
+
+    free(input_copy);
+    return input_length;
+}
+
+int replace_variables_in_text(char** input, Variable** variables, int* size, int for_display) {
+    char* input_copy = strdup(*input);
+    char* saveptr; // contexte pour strtok
+    char* token = strtok_r(input_copy, " ", &saveptr);
+    char* new_buffer = malloc(4096);
+    new_buffer[0] = '\0';
+
+    while(token != NULL) {
+        char* token_to_add = token;
+
+        Variable* var = find_variable(variables, size, token);
+
+        if(strspn(token, "1234567890.,") != strlen(token) // pas un float
+            && strspn(token, "1234567890") != strlen(token) // et pas un int
+        ) {
+            switch(for_display) {
+                case 0 : // pour les expressions lambda
+                    if(var != NULL) {
+                        if(strcmp(var->type, "str") == 0) {
+                            printf("Erreur: un string ne va pas dans une expression lambda !\n");
+                            return 1;
+                        } else {
+                            token_to_add = var->value;
+                        }
+                    }
+                    break;
+                case 1 : // pour l'affichage à l'écran uniquement
+                    if(var != NULL) {
+                        if(get_input_length(input) == 1 && strcmp(var->type, "str") == 0) {
+                            printf("%s\n", var->value);
+                            return 3;
+                        } else {
+                            token_to_add = var->value;
+                        }
+                    } else {
+                        if(strcspn(token, "*/+-()") == strlen(token)) { // donc pas un opérateur
+                            printf("Erreur: la variable %s n'est pas définie\n", token);
+                            return 1;
+                        }
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+        
+        strcat(new_buffer, token_to_add);
+        strcat(new_buffer, " ");
+
+        token = strtok_r(NULL, " ", &saveptr);
+    }
+
+    *input = strdup(new_buffer); // TODO: ajouter difficulté dans le README + problème strtok
+
+    free(input_copy);
+    free(new_buffer);
+    return 0;
+}
+
 /**
  * Cette fonction detecte si l'utilisateur a entre une variable.
  * 
@@ -89,26 +162,14 @@ char* get_type(char** string_value) {
  * 0 - succes (traitement postérieur non nécessaire)
  * 1 - succes (désormais il faut traiter l'opération)
  * 2 - erreur, voir retour à l'écran
+ * 3 - retour uniquement pour affichage
  */
 int check_variable(char** input, Variable** variables, int* size) {  
-    // if(strcspn(*input, "_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ") == strlen(*input)) {
-    //     return 1; // n'est pas une variable donc tout va bien
-    // }
-
-    char* input_copy = strdup(*input);
-    char* token = strtok(input_copy, " ");
-    int input_length = 0;
-    while(token != NULL) {
-        printf("=> %s\n", token);
-        input_length++;
-        token = strtok(NULL, " ");
-    }
-
-    // assignation
+    // cas de figure assignation
     if(strcspn(*input, "=") != strlen(*input)) {
 
         char* input_copy2 = strdup(*input);
-        token = strtok(input_copy2, " ");
+        char* token = strtok(input_copy2, " ");
         Variable var_to_add;
         int index = 0;
 
@@ -153,22 +214,26 @@ int check_variable(char** input, Variable** variables, int* size) {
         if(string_buffer[0] != '\0') { // veut dire que la valeur est un string
             // retirer l'espace en trop
             size_t len = strlen(string_buffer);
-            string_buffer[len-2] = '\0';
+            while(string_buffer[len-1] == ' ') {
+                len = strlen(string_buffer);
+                string_buffer[len-1] = '\0';
+            }
 
-            // vérifier l'ouverture et la fermeture du string (guillemets)
+            // vérifier l'ouverture et la fermeture du string (guillemets) TODO: 
             char* temp = malloc(4);
 
             if(string_buffer[0] != '"' && string_buffer[0] != '\'') {
                 strcat(temp, "\"");
-                strcat(temp, string_buffer);
+                string_buffer = strcat(temp, string_buffer);
             }
-            if(string_buffer[len-1] != '\'' && string_buffer[len-1] != '"')
+            if(string_buffer[len-1] != '\'' && string_buffer[len-1] != '"') {
                 strcat(string_buffer, "\"");
+            }
 
             var_to_add.value = strdup(string_buffer);
 
             free(temp);
-        } //TODO: ici vérifier que les balises du string sont correctes
+        }
 
         // verifier que la variable n'existe pas deja
         Variable* existing_var = find_variable(variables, size, var_to_add.name);
@@ -199,42 +264,80 @@ int check_variable(char** input, Variable** variables, int* size) {
     }
 
     else { // remplacer le nom de la variable par sa valeur dans le buffer
-        char* input_copy = strdup(*input);
-        char* token = strtok(input_copy, " ");
-        char* new_buffer = malloc(1024);
-        new_buffer[0] = '\0';
-
-        while(token != NULL) {
-            char* token_to_add = token;
-
-            if(strspn(token, "1234567890.,") != strlen(token) // pas un float
-                && !isdigit(atoi(token)) // et pas un int
-            ) {
-                Variable* var = find_variable(variables, size, token);
-                if(var != NULL) {
-                    // pour print uniquement un string
-                    if(input_length == 1 && strcmp(var->type, "str") == 0) {
-                        printf("%s\n", var->value);
-                        return 0;
-                    }
-                    token_to_add = var->value;
-                } else {
-                    printf("Erreur: la variable %s n'est pas définie\n", token);
-                    return 2;
-                }
-            }
-            
-            strcat(new_buffer, token_to_add);
-            strcat(new_buffer, " ");
-
-            token = strtok(NULL, " ");
-        }
-
-        *input = strdup(new_buffer); // TODO: ajouter difficulté dans le README
-        return 1;
+        int rep = replace_variables_in_text(input, variables, size, 1);
+        if(rep == 1)
+            return 2;
+        else if(rep == 3)
+            return 3;
+        else
+            return 1;
     }
 
     return 2;
+}
+
+int check_lambda(char** input, Variable** variables, int* size) {
+    if(strncmp(*input, "(lambda x.", 10) != 0) {
+        return 0; // aucune erreur donc tout va bien
+    }
+
+    char* input_copy = strdup(*input);
+
+    // partir du point et tout prendre y compris la variable de fin
+    char* expression = strchr(input_copy, '.');
+    expression++;
+
+    char* variable_space = strrchr(expression, ' ');
+    if(variable_space == NULL) {
+        printf("Erreur: le format de l'expression lambda est incorrect");
+        return 1;
+    }
+
+    *variable_space = '\0'; // pour couper en deux
+    // virer la dernière parenthèse
+    size_t len = strlen(expression);
+    if(len > 0) {
+        expression[len-1] = '\0';
+    } else {
+        printf("Erreur: l'allocation mémoire pour l'expression lambda a échoué\n");
+        return 1;
+    }
+    char* variable = variable_space + 1;
+
+    // remplacer les x dans l'expression
+    char** expr_p = &expression;
+
+    if(strspn(variable, "1234567890.,") != strlen(variable) // pas un float
+        && !isdigit(atoi(variable)) // et pas un int TODO: modifier cette ligne
+    ) {
+        Variable* existing_var = find_variable(variables, size, variable);
+        if(existing_var != NULL) {
+            replace_variables_in_text(expr_p, variables, size, 0);
+        } else {
+            printf("Erreur: la variable %s n'est pas définie\n", variable);
+            return 1;
+        }
+    } else {
+        Variable var_temp;
+        Variable* var = &var_temp;
+        Variable** var_p = &var;
+        int temp_size = 1;
+        int* size_p = &temp_size;
+
+        var_temp.name = "x";
+        var_temp.value = variable;
+        if(isdigit(atoi(variable)))
+            var_temp.type = "int";
+        else
+            var_temp.type  = "float";
+
+        replace_variables_in_text(expr_p, var_p, size_p, 0);
+    }
+
+    *input = strdup(expression);
+
+    free(input_copy);
+    return 0;
 }
 
 int main() {
@@ -244,7 +347,8 @@ int main() {
     printf("Entrez une expression arithmétique (ou 'q' pour quitter)\n");
     printf("Formats acceptés:\n");
     printf("  - Infixe: 3 + 4 * 5, (2 + 3) * 4\n");
-    printf("  - Postfixe: 3 4 5 * +, 2 3 + 4 *\n\n");
+    printf("  - Postfixe: 3 4 5 * +, 2 3 + 4 *\n");
+    printf("  - Lambda: (lambda x.x * 2) 5, (lambda x.x + (2 * x)) k\n\n");
     
     char* input = calloc(256, sizeof(char));
     Variable* variables = calloc(0, sizeof(Variable));
@@ -265,8 +369,13 @@ int main() {
         char* postfix = NULL;
         int need_free = 0;
 
-        int check = check_variable(&input, &variables, &size);
-        if(check == 1) {
+        int ck_lambda = check_lambda(&input, &variables, &size);
+        if(ck_lambda == 1) {
+            break;
+        }
+
+        int ck_variable = check_variable(&input, &variables, &size);
+        if(ck_variable == 1) {
             // Détecter si l'expression est déjà en postfixe
             if(is_postfix_expression(input)) {
                 // printf("-> Expression détectée: POSTFIXE\n");
@@ -297,6 +406,8 @@ int main() {
             if(need_free) {
                 free(postfix);
             }
+        } else if(ck_variable == 3) {
+            continue;
         }
     }
     
