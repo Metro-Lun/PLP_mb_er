@@ -371,7 +371,7 @@ int main() {
 
         int ck_lambda = check_lambda(&input, &variables, &size);
         if(ck_lambda == 1) {
-            break;
+            continue;
         }
 
         int ck_variable = check_variable(&input, &variables, &size);
