@@ -107,31 +107,36 @@ int check_variable(char** input, Variable** variables, int* size) {
     if(strcspn(*input, "=") != strlen(*input)) {
         // TODO: cas de figure où le string possède des espaces
 
-        if(input_length != 3)
-            return 3;
+        if(input_length != 3) {
+            printf("Erreur: tentative d'assignation incorrecte\n");
+            return 2;
+        }
 
         token = strtok(*input, " ");
         Variable var_to_add;
         int index = 0;
 
         while(token != NULL) {
-            printf("-----> %s\n", token);
             switch(index) {
                 case 0 :
                     if(isdigit(token[0])) {
                         printf("Erreur: le nom d'une variable ne doit pas commencer par un nombre\n");
-                        return 4;
+                        return 2;
                     }
                     var_to_add.name = strdup(token);
                     break;
                 case 1 :
-                    if(strcmp(token, "=") != 0)
-                        return 5;
+                    if(strcmp(token, "=") != 0) {
+                        printf("Erreur: le symbole \"=\" ne se situe pas au bon endroit\n");
+                        return 2;
+                    }
                     break;
                 case 2 : // TODO: erreur de string : ne capte que les 3 premiers caractères
                     char* new_type = get_type(&token);
-                    if(strcmp(new_type, "other") == 0)
-                        return 4;
+                    if(strcmp(new_type, "other") == 0) {
+                        printf("Erreur: la variable doit être un entier, un flottant ou une chaîne de caractères\n");
+                        return 2;
+                    }
                     else
                         var_to_add.type = new_type;
                     var_to_add.value = strdup(token);
@@ -150,8 +155,8 @@ int check_variable(char** input, Variable** variables, int* size) {
             (*size)++;
             Variable* new_variables = realloc(*variables, sizeof(Variable) * (*size));
             if(variables == NULL) {
-                perror("realloc");
-                return 6;
+                perror("Erreur: impossible de créer une nouvelle variable\n");
+                return 2;
             } else {
                 new_variables[*size-1] = var_to_add;
                 *variables = new_variables;
@@ -163,7 +168,7 @@ int check_variable(char** input, Variable** variables, int* size) {
             char* var_type = get_type(&var_to_add.value);
             if(strcmp(var_type, "other") == 0 || strcmp(var_type, existing_var->type) != 0) {
                 printf("Erreur: %s est de type %s\n", existing_var->name, existing_var->type);
-                return 4;
+                return 2;
             }
             
             existing_var->value = strdup(var_to_add.value);
