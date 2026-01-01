@@ -151,10 +151,14 @@ int check_variable(char** input, Variable** variables, int* size) {
         }
 
         if(string_buffer[0] != '\0') {
-            var_to_add.value = strdup(string_buffer);
-        }
+            // vérifier l'ouverture et la fermeture du string (guillemets)
+            if(string_buffer[0] != '"' || string_buffer[0] != '\'')
+                strcat("\"", string_buffer);
+            if(string_buffer[strlen(string_buffer)-1] != '\'' || string_buffer[strlen(string_buffer)-1] != '"')
+                strcat(string_buffer, "\"");
 
-        printf("TYPE2 => %s\n", var_to_add.type);
+            var_to_add.value = strdup(string_buffer);
+        } //TODO: ici vérifier que les balises du string sont correctes
 
         // verifier que la variable n'existe pas deja
         Variable* existing_var = find_variable(variables, size, var_to_add.name);
