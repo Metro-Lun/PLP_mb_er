@@ -99,22 +99,21 @@ int check_variable(char** input, Variable** variables, int* size) {
     char* token = strtok(input_copy, " ");
     int input_length = 0;
     while(token != NULL) {
+        printf("=> %s\n", token);
         input_length++;
         token = strtok(NULL, " ");
     }
 
     // assignation
     if(strcspn(*input, "=") != strlen(*input)) {
-        // TODO: cas de figure où le string possède des espaces
 
-        if(input_length != 3) {
-            printf("Erreur: tentative d'assignation incorrecte\n");
-            return 2;
-        }
-
-        token = strtok(*input, " ");
+        char* input_copy2 = strdup(*input);
+        token = strtok(input_copy2, " ");
         Variable var_to_add;
         int index = 0;
+
+        char* string_buffer = malloc(1024); // pour prendre en compte d'éventuels espaces de type "Bonjour le monde"
+        string_buffer[0] = '\0';
 
         while(token != NULL) {
             switch(index) {
@@ -131,23 +130,31 @@ int check_variable(char** input, Variable** variables, int* size) {
                         return 2;
                     }
                     break;
-                case 2 : // TODO: erreur de string : ne capte que les 3 premiers caractères
+                default:
                     char* new_type = get_type(&token);
                     if(strcmp(new_type, "other") == 0) {
                         printf("Erreur: la variable doit être un entier, un flottant ou une chaîne de caractères\n");
                         return 2;
                     }
+                    var_to_add.type = new_type;
+
+                    if(strcmp(new_type, "str") == 0) {
+                        strcat(string_buffer, token);
+                        strcat(string_buffer, " ");
+                    }
                     else
-                        var_to_add.type = new_type;
-                    var_to_add.value = strdup(token);
-                    break;
-                default:
+                        var_to_add.value = strdup(token);
                     break;
             }
-
             index++;
             token = strtok(NULL, " ");
         }
+
+        if(string_buffer[0] != '\0') {
+            var_to_add.value = strdup(string_buffer);
+        }
+
+        printf("TYPE2 => %s\n", var_to_add.type);
 
         // verifier que la variable n'existe pas deja
         Variable* existing_var = find_variable(variables, size, var_to_add.name);
@@ -231,7 +238,7 @@ int main() {
     while(1) {
         printf("> ");
         
-        if(fgets(input, sizeof(input), stdin) == NULL) break;
+        if(fgets(input, 256, stdin) == NULL) break;
         
         size_t len = strlen(input);
         if(len > 0 && input[len-1] == '\n') input[len-1] = '\0';
