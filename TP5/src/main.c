@@ -171,7 +171,7 @@ int check_variable(char** input, Variable** variables, int* size) {
 
             printf("Variable %s définie avec la valeur %s (%s)\n", var_to_add.name, var_to_add.value, var_to_add.type);
         } 
-        else {
+        else { // sinon tenter d'en remplacer la valeur
             char* var_type = get_type(&var_to_add.value);
             if(strcmp(var_type, "other") == 0 || strcmp(var_type, existing_var->type) != 0) {
                 printf("Erreur: %s est de type %s\n", existing_var->name, existing_var->type);
@@ -184,7 +184,7 @@ int check_variable(char** input, Variable** variables, int* size) {
         return 0;
     }
 
-    else { // remplacer le nom de la variable par sa valeur
+    else { // remplacer le nom de la variable par sa valeur dans le buffer
         char* input_copy = strdup(*input);
         char* token = strtok(input_copy, " ");
         char* new_buffer = malloc(1024);
@@ -221,7 +221,6 @@ int check_variable(char** input, Variable** variables, int* size) {
     return 2;
 }
 
-// TODO: modifier les codes d'erreur
 int main() {
     printf("╔══════════════════════════════════════════╗\n");
     printf("║  ÉVALUATEUR D'EXPRESSIONS ARITHMÉTIQUES  ║\n");
@@ -283,8 +282,6 @@ int main() {
                 free(postfix);
             }
         }
-
-        
     }
     
     printf("\nAu revoir !\n");
