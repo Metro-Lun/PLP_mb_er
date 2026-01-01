@@ -150,14 +150,24 @@ int check_variable(char** input, Variable** variables, int* size) {
             token = strtok(NULL, " ");
         }
 
-        if(string_buffer[0] != '\0') {
+        if(string_buffer[0] != '\0') { // veut dire que la valeur est un string
+            // retirer l'espace en trop
+            size_t len = strlen(string_buffer);
+            string_buffer[len-2] = '\0';
+
             // vérifier l'ouverture et la fermeture du string (guillemets)
-            if(string_buffer[0] != '"' || string_buffer[0] != '\'')
-                strcat("\"", string_buffer);
-            if(string_buffer[strlen(string_buffer)-1] != '\'' || string_buffer[strlen(string_buffer)-1] != '"')
+            char* temp = malloc(4);
+
+            if(string_buffer[0] != '"' && string_buffer[0] != '\'') {
+                strcat(temp, "\"");
+                strcat(temp, string_buffer);
+            }
+            if(string_buffer[len-1] != '\'' && string_buffer[len-1] != '"')
                 strcat(string_buffer, "\"");
 
             var_to_add.value = strdup(string_buffer);
+
+            free(temp);
         } //TODO: ici vérifier que les balises du string sont correctes
 
         // verifier que la variable n'existe pas deja
@@ -290,6 +300,7 @@ int main() {
         }
     }
     
+    free(input);
     printf("\nAu revoir !\n");
     return 0;
 }
