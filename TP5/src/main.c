@@ -371,6 +371,7 @@ int main() {
 
         int ck_lambda = check_lambda(&input, &variables, &size);
         if(ck_lambda == 1) {
+            printf("dek,ded\n");
             continue;
         }
 
