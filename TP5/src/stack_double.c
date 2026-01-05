@@ -4,6 +4,7 @@
 #include <string.h>
 #include <ctype.h>
 #include "interpretor.h"
+#include "structures.h"
 
 // ============================================
 // PILE DE NOMBRES (StackDouble) - Implementation
